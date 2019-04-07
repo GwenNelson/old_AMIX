@@ -24,9 +24,12 @@ void idt_set_gate(uint8_t num, uintptr_t base, uint16_t sel, uint8_t flags);
 void init_idt();
 
 typedef struct interrupt_frame_t {
-	void* eip;
-	uint16_t cs, :16;
+	uint32_t eip;
+	uint32_t cs;
 	uint32_t eflags;
-	void* esp;
-	uint16_t ss, :16;
+	uint32_t useresp;
+	uint32_t ss;
 } interrupt_frame_t;
+
+#define ISR(name) __attribute__((interrupt)) void name (interrupt_frame_t* frame)
+#define ISR_FAULT(name)  __attribute__((interrupt)) void name (interrupt_frame_t* frame, uint32_t errno)

@@ -6,7 +6,6 @@
 #include <kernel/printf.h>
 #include <stdint.h>
 #include <stddef.h>
-#include <stdbool.h>
 
 void setup_phys_alloc(void* alloc_pool, size_t alloc_pool_size) {
      kprintf("Allocating memory from pool at 0x%08p\n", alloc_pool);
@@ -41,9 +40,14 @@ void kmain(void* alloc_pool, size_t alloc_pool_size) {
      setup_phys_alloc(static_pool, 4096*256);
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
      setup_paging();
+     
 
-     setup_traps();
+     // TODO - IRQ routing+masking via PIC
 
-     asm volatile("int $0x3");
+     // TODO - setup an interface for timer drivers
+     //        kernel needs to be able to trigger a callback in X amount of time
+     //        start with simple PIT
+
+
      for(;;);
 }

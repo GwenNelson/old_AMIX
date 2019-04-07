@@ -1,10 +1,15 @@
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <kernel/debug_output.h>
 #include <kernel/multiboot.h>
 #include <kernel/arch/memlayout.h>
 #include <kernel/kmain.h>
 #include <kernel/printf.h>
 #include <kernel/arch/gdt.h>
+#include <kernel/arch/idt.h>
+#include <kernel/arch/pic.h>
+#include <kernel/arch/cpuid.h>
 
 #define CHECK_FLAG(flags,mask)   ((flags) & mask)
 
@@ -87,5 +92,11 @@ void x86_enter(struct multiboot_info *mboot_ptr) {
      handle_mmap(mboot_ptr);
 
      init_gdt();
+     init_idt();
+     init_pic();
+     init_pit();
+     asm volatile("sti");
+
+     // TODO - pass a timing interface to kmain, kmain can then setup tasking
      kmain(alloc_pool+4096,alloc_pool_size);
 }

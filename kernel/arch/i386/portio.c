@@ -12,3 +12,8 @@ uint8_t inb(uint16_t port)
                    : "Nd"(port) );
     return ret;
 }
+
+void io_wait(void)
+{
+    asm volatile ( "outb %%al, $0x80" : : "a"(0) );
+}

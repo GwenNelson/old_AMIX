@@ -7,4 +7,4 @@ clean: kernel
 	make -C kernel clean
 
 run-qemu: all
-	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G
+	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G -cpu IvyBridge
