@@ -1,6 +1,7 @@
 #include <kernel/debug_output.h>
 #include <kernel/arch/memlayout.h>
 #include <kernel/arch/mmu.h>
+#include <kernel/arch/idt.h>
 #include <kernel/kalloc.h>
 #include <kernel/printf.h>
 #include <stdint.h>
@@ -29,6 +30,10 @@ void setup_paging() {
 
 }
 
+void setup_traps() {
+     init_idt();
+}
+
 char static_pool[4096*256] __attribute((aligned(4096)));
 
 void kmain(void* alloc_pool, size_t alloc_pool_size) {
@@ -36,6 +41,8 @@ void kmain(void* alloc_pool, size_t alloc_pool_size) {
      setup_phys_alloc(static_pool, 4096*256);
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
      setup_paging();
+
+     setup_traps();
 
      for(;;);
 }

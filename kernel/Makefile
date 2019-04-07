@@ -23,6 +23,7 @@ KERNEL_OBJS=\
 	$(KERNEL_ARCH_OBJS)\
 	kalloc.o\
 	printf.o\
+	memset.o\
 	kmain.o
 
 .c.o:
