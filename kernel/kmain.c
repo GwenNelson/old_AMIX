@@ -48,9 +48,20 @@ char static_pool[4096*256] __attribute((aligned(4096)));
 
 void a() {for(;;) kprintf("A");}
 void b() {for(;;) kprintf("B");}
+void c() {for(;;) kprintf("C");}
+void d() {for(;;) kprintf("D");}
+void setup_d_task_entry() {
+	// test spawning a task inside another task
+	task_control_block_t task_d;
+	create_task(&task_d,d, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
+	add_task(&task_d);
+	for(;;);
+}
 
 task_control_block_t task_a;
 task_control_block_t task_b;
+task_control_block_t task_c;
+task_control_block_t setup_d_task;
 
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
@@ -64,12 +75,15 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
 
      create_task(&task_a,a, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
      create_task(&task_b,b, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
+     create_task(&task_c,c, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
+     create_task(&setup_d_task,setup_d_task_entry, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
 
      add_task(&task_a);
      add_task(&task_b);
 
      asm volatile("sti");
-
+     add_task(&task_c);
+     add_task(&setup_d_task);
 
      // idle loop
      for(;;) asm volatile("hlt");

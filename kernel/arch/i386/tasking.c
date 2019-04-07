@@ -12,8 +12,6 @@ task_control_block_t* running_task;
 task_control_block_t main_task;
 
 void init_tasking() {
-
-//     create_task(&other_task,other_task_main, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
      main_task.next  = NULL;
      running_task = &main_task;
 
