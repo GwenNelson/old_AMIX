@@ -21,3 +21,6 @@ void create_task(task_control_block_t* task, void* entry, uint32_t flags, uint32
 
 void yield();
 void switch_to_task(task_regs_t *old_regs, task_regs_t* new_regs);
+
+
+#define DEFAULT_TASK_FLAGS 0x0002|0x0200

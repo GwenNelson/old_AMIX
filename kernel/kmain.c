@@ -46,8 +46,11 @@ void setup_timer(timer_t* timer) {
 
 char static_pool[4096*256] __attribute((aligned(4096)));
 
-task_control_block_t main_task;
-task_control_block_t other_task;
+void a() {for(;;) kprintf("A");}
+void b() {for(;;) kprintf("B");}
+
+task_control_block_t task_a;
+task_control_block_t task_b;
 
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
@@ -59,14 +62,15 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
 
      init_tasking();
 
-     asm volatile("cli");
+     create_task(&task_a,a, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
+     create_task(&task_b,b, DEFAULT_TASK_FLAGS, V2P(&kernel_page_dir));
 
-     main_task.next = &other_task;
-     other_task.next = &main_task;
+     add_task(&task_a);
+     add_task(&task_b);
 
      asm volatile("sti");
 
-     for(;;) { 
-		kprintf("A\t");
-     }
+
+     // idle loop
+     for(;;) asm volatile("hlt");
 }
