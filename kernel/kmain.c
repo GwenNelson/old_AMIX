@@ -44,5 +44,6 @@ void kmain(void* alloc_pool, size_t alloc_pool_size) {
 
      setup_traps();
 
+     asm volatile("int $0x3");
      for(;;);
 }

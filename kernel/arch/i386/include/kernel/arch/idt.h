@@ -22,3 +22,11 @@ typedef struct idt_ptr_struct idt_ptr_t;
 
 void idt_set_gate(uint8_t num, uintptr_t base, uint16_t sel, uint8_t flags);
 void init_idt();
+
+typedef struct interrupt_frame_t {
+	void* eip;
+	uint16_t cs, :16;
+	uint32_t eflags;
+	void* esp;
+	uint16_t ss, :16;
+} interrupt_frame_t;
