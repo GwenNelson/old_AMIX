@@ -2,6 +2,8 @@
 #include <kernel/arch/memlayout.h>
 #include <kernel/arch/mmu.h>
 #include <kernel/arch/idt.h>
+#include <kernel/arch/tasking.h>
+#include <kernel/arch/portio.h>
 #include <kernel/kalloc.h>
 #include <kernel/printf.h>
 #include <kernel/timer.h>
@@ -25,13 +27,17 @@ void setup_paging() {
 	mmu_map_page(&kernel_page_dir,(void*)(i * 0x1000), (void*)(i * 0x1000) + KERN_BASE,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_CPU_GLOBAL);
      }
 
+     mmu_map_page(&kernel_page_dir,0xb8000,0xC03FF000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
      // switch to the new page directory
      load_page_directory((mmu_page_directory_t*)  EARLY_V2P(&kernel_page_dir));
 
 }
 
 void timer_cb() {
-     // TODO - use this to switch tasks etc
+     if(tasking_ready) { 
+	     console_put('.');
+	     yield();
+     }
 }
 
 void setup_timer(timer_t* timer) {
@@ -40,6 +46,9 @@ void setup_timer(timer_t* timer) {
 
 char static_pool[4096*256] __attribute((aligned(4096)));
 
+task_control_block_t main_task;
+task_control_block_t other_task;
+
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
      setup_phys_alloc(static_pool, 4096*256);
@@ -47,7 +56,17 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      setup_paging();
      
      setup_timer(timer);
-   
 
-     for(;;);
+     init_tasking();
+
+     asm volatile("cli");
+
+     main_task.next = &other_task;
+     other_task.next = &main_task;
+
+     asm volatile("sti");
+
+     for(;;) { 
+		kprintf("A\t");
+     }
 }

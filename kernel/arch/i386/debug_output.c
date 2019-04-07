@@ -37,8 +37,8 @@ static void scroll() {
     }
 }
 
-static void console_put(char c) {
-     uint8_t  backColour = 0;
+void console_put(char c) {
+   	uint8_t  backColour = 0;
      uint8_t  foreColour = 15;
      uint8_t  attributeByte = (backColour << 4) | (foreColour & 0x0F);
      uint16_t attribute = attributeByte << 8;
@@ -70,7 +70,6 @@ static void console_put(char c) {
      }
         scroll();
         move_cursor();
-     
 }
 
 static int is_ser_transmit_empty(uint16_t port) {

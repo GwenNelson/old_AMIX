@@ -90,8 +90,11 @@ void handle_ram(struct multiboot_info* mboot_ptr) {
 timer_t timer;
 
 ISR(timer_handler) {
-	if(timer.callback != NULL) timer.callback();
+	asm volatile("cli");
 	outb(0x20,0x20);
+	if(timer.callback != NULL) timer.callback();
+	asm volatile("sti");
+
 }
 
 
