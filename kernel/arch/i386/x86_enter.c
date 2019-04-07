@@ -4,6 +4,7 @@
 #include <kernel/arch/memlayout.h>
 #include <kernel/kmain.h>
 #include <kernel/printf.h>
+#include <kernel/arch/gdt.h>
 
 #define CHECK_FLAG(flags,mask)   ((flags) & mask)
 

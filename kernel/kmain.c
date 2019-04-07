@@ -14,14 +14,10 @@ void setup_phys_alloc(void* alloc_pool, size_t alloc_pool_size) {
 }
 
 mmu_page_directory_t kernel_page_dir;
-mmu_page_table_t     kimage_page_table;
 
 void setup_paging() {
      // create a blank page directory
      clear_page_directory(&kernel_page_dir);
-
-     // create a blank page table
-     clear_page_table(&kimage_page_table);
 
      // create kernel image mapping in the page table
      int i=0;
@@ -30,12 +26,11 @@ void setup_paging() {
      }
 
      // switch to the new page directory
-     load_page_directory(EARLY_V2P(&kernel_page_dir));
+     load_page_directory((mmu_page_directory_t*)  EARLY_V2P(&kernel_page_dir));
 
 }
 
 char static_pool[4096*256] __attribute((aligned(4096)));
-
 
 void kmain(void* alloc_pool, size_t alloc_pool_size) {
      kprintf("AMIX starting....\n\n");
@@ -43,10 +38,5 @@ void kmain(void* alloc_pool, size_t alloc_pool_size) {
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
      setup_paging();
 
-
-     void* test = kalloc();
-     snprintf(test,4096,"%s","Hello world"); 
-     mmu_map_page(&kernel_page_dir,V2P(test),0xBEEF0000,MMU_PTE_PRESENT|MMU_PTE_WRITABLE);
-     kprintf("%s",0xBEEF0000);
      for(;;);
 }

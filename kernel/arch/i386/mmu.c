@@ -40,6 +40,7 @@ void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, u
         *e = (((uintptr_t)EARLY_V2P(table)))|MMU_PDE_PRESENT|MMU_PDE_WRITABLE;
      }
      (*table)[PAGE_TABLE_INDEX((uint32_t)virt_addr)] = (((uint32_t)phys_addr))|flags;
+     mmu_flush_tlb(virt_addr);
 }
 
 // shamelessly ripped from the osdev wiki
@@ -54,5 +55,8 @@ void* V2P(void* virtualaddr) {
     // Here you need to check whether the PT entry is present.
  
     return (void *)((pt[ptindex] & ~0xFFF) + ((unsigned long)virtualaddr & 0xFFF));
+}
 
+void mmu_flush_tlb(void* virt_addr) {
+     __asm__("invlpg %0\n": : "m"(virt_addr));
 }

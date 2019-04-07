@@ -50,4 +50,6 @@ void load_page_directory(mmu_page_directory_t* phys_addr);
 
 void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, uint32_t flags);
 
+void mmu_flush_tlb(void* virt_addr);
+
 void* V2P(void* virtualaddr);
