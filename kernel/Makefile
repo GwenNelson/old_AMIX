@@ -21,7 +21,7 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
 KERNEL_OBJS=\
 	$(KERNEL_ARCH_OBJS)\
-	page_alloc.o\
+	kalloc.o\
 	printf.o\
 	kmain.o
 

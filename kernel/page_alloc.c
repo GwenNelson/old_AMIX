@@ -1,5 +1,6 @@
 #include <kernel/page_alloc.h>
 #include <kernel/arch/memlayout.h>
+#include <kernel/debug_output.h>
 
 #include <assert.h>
 
@@ -15,7 +16,7 @@ void page_alloc_init(page_alloc_allocator_t* allocator, bool use_lock, void (*in
 
 // this sets up a region ready for use for allocating pages
 void page_alloc_init_region(page_alloc_allocator_t* allocator, void* region_start, size_t len) {
-      region_start = EARLY_P2V(region_start);
+      region_start += KERN_BASE;
   	page_alloc_region_t *r, *rend;
       page_alloc_region_t **rp;
       page_alloc_region_t *p, *pend;
@@ -69,7 +70,8 @@ size_t page_alloc_count_free_pages(page_alloc_allocator_t* allocator) {
 }
 
 void* page_alloc(page_alloc_allocator_t* allocator, size_t len) {
-     void* p;
+      kprintf("freelist=%08p\n", allocator->freelist);
+      void* p;
      page_alloc_region_t *r, **rp;
      assert((len % PAGESIZE) >= 0);
 
@@ -79,13 +81,17 @@ void* page_alloc(page_alloc_allocator_t* allocator, size_t len) {
        len = (len & ~(PAGESIZE-1)) + PAGESIZE;
      }
 
-     for(rp=&allocator->freelist; (r=*rp) != 0; rp=&r->next) {
+     kprintf("len=%i\n", len);
+     for(rp=&(allocator->freelist); (r=*rp) != 0; rp=&r->next) {
          if(r->len >= len) {
             r->len -= len;
-            p = (void*)r + r->len;
+            p = (char*)r + r->len;
             if(r->len == 0) *rp = r->next;
             if(allocator->use_lock) allocator->unlock(allocator->lock_data);
+            kprintf("p=0x%08p, rp=0x%08p, *rp=0x%08p\n", p, rp, *rp);
 	    return p;
+	 } else {
+            kprintf("OH NO\n");
 	 }
      }
      if(allocator->use_lock) allocator->unlock(allocator->lock_data);

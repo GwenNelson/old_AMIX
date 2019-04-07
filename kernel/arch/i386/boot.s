@@ -52,7 +52,7 @@ _start:
 
 1:
 	# map the kernel.
-	cmpl $(_kernel_end - 0xC0000000 + 0xFFFF), %esi
+	cmpl $(_kernel_end - 0xC0000000 + 0xFFFFF), %esi
 	jge 3f
 
 	# Map physical address as "present, writable". Note that this maps

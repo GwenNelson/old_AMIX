@@ -39,5 +39,15 @@ typedef mmu_pde_t mmu_page_directory_t[1024] __attribute((aligned(PAGESIZE)));
 typedef uint32_t mmu_pte_t;
 typedef mmu_pte_t mmu_page_table_t[1024] __attribute((aligned(PAGESIZE)));
 
+
+#define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
+#define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
+
 void clear_page_directory(mmu_page_directory_t* dir);
 void clear_page_table(mmu_page_table_t* table);
+
+void load_page_directory(mmu_page_directory_t* phys_addr);
+
+void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, uint32_t flags);
+
+void* V2P(void* virtualaddr);

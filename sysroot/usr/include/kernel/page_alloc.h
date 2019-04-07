@@ -31,6 +31,6 @@ void* page_alloc(page_alloc_allocator_t* allocator, size_t len);
 void page_alloc_free(page_alloc_allocator_t* allocator, void* region_start, size_t len);
 size_t page_alloc_count_free_pages(page_alloc_allocator_t* allocator);
 
-
+page_alloc_allocator_t phys_alloc;
 
 #endif
