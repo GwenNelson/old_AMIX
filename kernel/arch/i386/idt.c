@@ -61,9 +61,12 @@ ISR_FAULT(page_fault) {
 	// TODO - pass this to the VMM
 }
 
-ISR(timer_handler) {
+ISR(timer_handler);
+
+/*ISR(timer_handler) {
+	kprintf(".");
 	outb(0x20,0x20);
-}
+}*/
 
 static inline void lidt(void* base, uint16_t size)
 {   // This function works in 32 and 64bit mode

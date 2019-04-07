@@ -4,6 +4,7 @@
 #include <kernel/arch/idt.h>
 #include <kernel/kalloc.h>
 #include <kernel/printf.h>
+#include <kernel/timer.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -29,25 +30,24 @@ void setup_paging() {
 
 }
 
-void setup_traps() {
-     init_idt();
+void timer_cb() {
+     // TODO - use this to switch tasks etc
+}
+
+void setup_timer(timer_t* timer) {
+     timer->callback = &timer_cb;
 }
 
 char static_pool[4096*256] __attribute((aligned(4096)));
 
-void kmain(void* alloc_pool, size_t alloc_pool_size) {
+void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
      setup_phys_alloc(static_pool, 4096*256);
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
      setup_paging();
      
-
-     // TODO - IRQ routing+masking via PIC
-
-     // TODO - setup an interface for timer drivers
-     //        kernel needs to be able to trigger a callback in X amount of time
-     //        start with simple PIT
-
+     setup_timer(timer);
+   
 
      for(;;);
 }

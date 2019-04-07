@@ -52,7 +52,6 @@ void set_kernel_stack(uint32_t stack)
 
 
 void init_gdt() {
-     kprintf("Loading GDT...\n");
      gdt_ptr.limit = (sizeof(gdt_entry_t) * 6) - 1;
      gdt_ptr.base  = (uint32_t)&gdt_entries;
 

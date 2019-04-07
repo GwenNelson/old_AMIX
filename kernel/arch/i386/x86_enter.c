@@ -9,7 +9,9 @@
 #include <kernel/arch/gdt.h>
 #include <kernel/arch/idt.h>
 #include <kernel/arch/pic.h>
+#include <kernel/arch/portio.h>
 #include <kernel/arch/cpuid.h>
+#include <kernel/memset.h>
 
 #define CHECK_FLAG(flags,mask)   ((flags) & mask)
 
@@ -85,6 +87,14 @@ void handle_ram(struct multiboot_info* mboot_ptr) {
      }
 }
 
+timer_t timer;
+
+ISR(timer_handler) {
+	if(timer.callback != NULL) timer.callback();
+	outb(0x20,0x20);
+}
+
+
 void x86_enter(struct multiboot_info *mboot_ptr) {
      kprintf("AMIX booting on i386\n");
      handle_cmdline(mboot_ptr);
@@ -95,8 +105,10 @@ void x86_enter(struct multiboot_info *mboot_ptr) {
      init_idt();
      init_pic();
      init_pit();
-     asm volatile("sti");
 
-     // TODO - pass a timing interface to kmain, kmain can then setup tasking
-     kmain(alloc_pool+4096,alloc_pool_size);
+
+     memset(&timer,0,sizeof(timer_t));
+
+     asm volatile("sti");
+     kmain(alloc_pool+4096,alloc_pool_size,&timer);
 }
