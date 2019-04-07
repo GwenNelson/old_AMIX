@@ -10,7 +10,6 @@
 void setup_phys_alloc(void* alloc_pool, size_t alloc_pool_size) {
      kprintf("Allocating memory from pool at 0x%08p\n", alloc_pool);
      freerange(alloc_pool, alloc_pool+alloc_pool_size);     
-     kprintf("Physical page allocation ready\n");
 }
 
 mmu_page_directory_t kernel_page_dir;

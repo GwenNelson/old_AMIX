@@ -32,9 +32,7 @@ void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, u
      mmu_pde_t* e = &((*dir)[PAGE_DIRECTORY_INDEX((uintptr_t)virt_addr)]);
      mmu_page_table_t* table;
      if( (*e & MMU_PTE_PRESENT) != MMU_PTE_PRESENT) {
-        kprintf("Need to allocate new page for mapping %08p -> %08p\n",phys_addr,virt_addr);
         void* new_page = kalloc();
-        kprintf("Allocated at 0x%08p\n", new_page);
 	clear_page_table((mmu_page_table_t*)new_page);
 	table = (mmu_page_table_t*)new_page;
         *e = (((uintptr_t)EARLY_V2P(table)))|MMU_PDE_PRESENT|MMU_PDE_WRITABLE;
