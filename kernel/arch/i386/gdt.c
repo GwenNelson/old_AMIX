@@ -60,7 +60,7 @@ void init_gdt() {
      gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Data segment
      gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
      gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
-     write_tss(5, 0x10, &stack_begin);
+     write_tss(5, 0x10, &stack_end);
 
      gdt_flush((uint32_t)&gdt_ptr);
      tss_flush();

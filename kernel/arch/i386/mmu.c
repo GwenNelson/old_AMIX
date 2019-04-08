@@ -7,17 +7,17 @@ void clear_page_directory(mmu_page_directory_t* dir) {
      // first we clear out the whole directory
      int i=0;
      for(i=0; i<1024; i++) {
-         (*dir)[i] = MMU_PDE_WRITABLE;
+         (*dir)[i] = MMU_PDE_WRITABLE|MMU_PDE_USER;
      }
      // then we set the highest entry to the directory itself, allowing access to modify the page table later
-     (*dir)[1023] = (uint32_t)(EARLY_V2P(dir)) | MMU_PDE_PRESENT|MMU_PDE_WRITABLE;
+     (*dir)[1023] = (uint32_t)(EARLY_V2P(dir)) | MMU_PDE_PRESENT|MMU_PDE_WRITABLE|MMU_PDE_USER;
 }
 
 void clear_page_table(mmu_page_table_t* table) {
      // we just clear out the whole table
      int i=0;
      for(i=0; i<1024; i++) {
-         (*table)[i] = MMU_PTE_WRITABLE;
+         (*table)[i] = MMU_PTE_WRITABLE|MMU_PTE_USER;
      }
 }
 
@@ -35,7 +35,7 @@ void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, u
         void* new_page = kalloc();
 	clear_page_table((mmu_page_table_t*)new_page);
 	table = (mmu_page_table_t*)new_page;
-        *e = (((uintptr_t)EARLY_V2P(table)))|MMU_PDE_PRESENT|MMU_PDE_WRITABLE;
+        *e = (((uintptr_t)EARLY_V2P(table)))|MMU_PDE_PRESENT|MMU_PDE_WRITABLE|MMU_PDE_USER;
      }
      (*table)[PAGE_TABLE_INDEX((uint32_t)virt_addr)] = (((uint32_t)phys_addr))|flags;
      mmu_flush_tlb(virt_addr);

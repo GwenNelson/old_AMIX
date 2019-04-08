@@ -104,6 +104,7 @@ void x86_enter(struct multiboot_info *mboot_ptr) {
      handle_ram(mboot_ptr);
      handle_mmap(mboot_ptr);
 
+     asm volatile("cli");
      init_gdt();
      init_idt();
      init_pic();
@@ -112,6 +113,5 @@ void x86_enter(struct multiboot_info *mboot_ptr) {
 
      memset(&timer,0,sizeof(timer_t));
 
-     asm volatile("sti");
      kmain(alloc_pool+4096,alloc_pool_size,&timer);
 }

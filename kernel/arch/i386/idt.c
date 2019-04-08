@@ -21,6 +21,8 @@ void dump_frame(interrupt_frame_t* frame) {
 }
 
 ISR(default_handler) {
+	kprintf("DEFAULT HANDLER\n");
+	dump_frame(frame);
 }
 
 ISR(div_zero_handler) {
@@ -54,11 +56,18 @@ ISR(invalid_opcode_handler) {
 ISR_FAULT(gpf_handler) {
 	kprintf("General protection fault at 0x%08p\n", frame->eip);
 	dump_frame(frame);
+	for(;;) asm volatile("cli; hlt");
 }
 
 ISR_FAULT(page_fault) {
 	kprintf("PAGE FAULT!\n");
 	// TODO - pass this to the VMM
+}
+
+ISR_FAULT(double_fault_handler) {
+	kprintf("Double fault\n");
+	dump_frame(frame);
+	for(;;) asm volatile("cli; hlt");	
 }
 
 ISR(timer_handler);
@@ -79,11 +88,6 @@ static inline void lidt(void* base, uint16_t size)
 }
 
 void init_idt() {
-     asm volatile("cli");
-
-
-
-
      idt_ptr.limit = sizeof(idt_entry_t) * 256 -1;
      idt_ptr.base  = (uint32_t)&idt_entries;
      memset(&idt_entries, 0, sizeof(idt_entry_t)*256);
@@ -98,8 +102,8 @@ void init_idt() {
      idt_set_gate(0x02, &nmi_handler,           0x8,0x8F);
      idt_set_gate(0x03, &breakpoint_handler,    0x8,0x8F);
      idt_set_gate(0x04, &invalid_opcode_handler,0x8,0x8F);
+     idt_set_gate(0x08, &double_fault_handler,  0x8,0x8F);
      idt_set_gate(0x0D, &gpf_handler,           0x8,0x8F);
      idt_set_gate(0x20, &timer_handler,		0x8,0x8F);
      lidt(idt_ptr.base, idt_ptr.limit);
-     asm volatile("sti");
 }
