@@ -2,6 +2,7 @@
 #include <kernel/arch/memlayout.h>
 #include <kernel/arch/idt.h>
 #include <kernel/arch/portio.h>
+#include <kernel/syscall.h>
 
 idt_entry_t idt_entries[256];
 idt_ptr_t   idt_ptr;
@@ -72,10 +73,24 @@ ISR_FAULT(double_fault_handler) {
 
 ISR(timer_handler);
 
-/*ISR(timer_handler) {
-	kprintf(".");
-	outb(0x20,0x20);
-}*/
+uint32_t sys_debug_out(uint32_t* params) {
+	kprintf("%c",params[1]);
+}
+
+static uint32_t (*syscalls[])(uint32_t*) = {
+	[SYS_debug_out]	sys_debug_out,
+};
+
+ISR(syscall_handler) {
+	uint32_t* userstack  = frame->useresp;
+	uint32_t syscall_no  = userstack[0];
+	if(syscall_no >0 && syscall_no < (sizeof(syscalls)/sizeof(void*)) && syscalls[syscall_no]) {
+		userstack[0] = syscalls[syscall_no](userstack);
+	} else {
+		kprintf("unknown syscall number 0x%x\n",syscall_no);
+	}
+
+}
 
 static inline void lidt(void* base, uint16_t size)
 {   // This function works in 32 and 64bit mode
@@ -105,5 +120,6 @@ void init_idt() {
      idt_set_gate(0x08, &double_fault_handler,  0x8,0x8F);
      idt_set_gate(0x0D, &gpf_handler,           0x8,0x8F);
      idt_set_gate(0x20, &timer_handler,		0x8,0x8F);
+     idt_set_gate(0x80, &syscall_handler,       0x8,0x8F);
      lidt(idt_ptr.base, idt_ptr.limit);
 }

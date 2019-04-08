@@ -17,10 +17,27 @@ start:
      push 0x1B; ;user code segment with bottom 2 bits set for ring 3
      push a ;may need to remove the _ for this to work right 
      iret
+     a:
+	; here is where we start doing shit
+	; first, test a simple syscall via int 0x80
 
-	a:
-		;TODO - add something here
+	mov esi,hello_world_string
+	call print_string
 
-		jmp a
+endless_loop: jmp endless_loop
 
+print_string:
+	.run:
+	lodsb
+	cmp al,0
+	je .done
+	push eax
+	push 0x1
+	int 0x80
+	pop ecx
+	pop ecx
+	jmp .run
+	.done:
+	ret
 
+hello_world_string:	db 'Hello world', 0

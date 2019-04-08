@@ -38,7 +38,6 @@ void mmu_map_page(mmu_page_directory_t* dir, void* phys_addr, void* virt_addr, u
         *e = (((uintptr_t)EARLY_V2P(table)))|MMU_PDE_PRESENT|MMU_PDE_WRITABLE|MMU_PDE_USER;
      }
      (*table)[PAGE_TABLE_INDEX((uint32_t)virt_addr)] = (((uint32_t)phys_addr))|flags;
-     mmu_flush_tlb(virt_addr);
 }
 
 // shamelessly ripped from the osdev wiki
