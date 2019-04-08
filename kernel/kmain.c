@@ -43,7 +43,7 @@ void setup_timer(timer_t* timer) {
      timer->callback = &timer_cb;
 }
 
-char static_pool[4096*256] __attribute((aligned(4096)));
+char static_pool[4096*128] __attribute((aligned(4096)));
 
 mmu_page_directory_t user_proc_dir;
 task_control_block_t first_user_proc;
@@ -80,17 +80,18 @@ void setup_user() {
 
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
-     setup_phys_alloc(static_pool, 4096*256);
+     setup_phys_alloc(static_pool, 4096*128);
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
      setup_paging();
-     
+
+     asm volatile("sti");
+
      setup_timer(timer);
 
      init_tasking();
 
-     setup_user();
 
-     asm volatile("sti");
+     setup_user();
 
      // idle loop
      for(;;) asm volatile("hlt");

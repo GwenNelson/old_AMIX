@@ -21,7 +21,7 @@ void dump_frame(interrupt_frame_t* frame) {
 		     frame->eip, frame->cs, frame->eflags, frame->useresp, frame->ss);
 }
 
-ISR(default_handler) {
+ISR_FAULT(default_handler) {
 /*	kprintf("DEFAULT HANDLER\n");
 	dump_frame(frame);*/
 }

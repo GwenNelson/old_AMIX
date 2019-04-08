@@ -43,9 +43,12 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
 }
 
 void add_task(task_control_block_t* task) {
+     asm volatile("cli");
       task_control_block_t* t=running_task;
       while((t->next != NULL)) t=t->next;
       t->next = task;
+     asm volatile("sti");
+     yield();
 }
 
 void yield() {

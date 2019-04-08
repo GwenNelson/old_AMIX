@@ -24,6 +24,8 @@ uint32_t sys_get_tid() {
 
 extern char* usercode;
 uint32_t sys_fork() {
+	// TODO - iterate through stuff, copy relevant bits
+	asm volatile("cli");
 	task_control_block_t* new_task = (task_control_block_t*)kalloc();
 	mmu_page_directory_t* new_pd   = (mmu_page_directory_t*)kalloc();
 
@@ -43,18 +45,14 @@ uint32_t sys_fork() {
 
 	mmu_map_page(new_pd,V2P(p),0x00200000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
 
-	mmu_map_page(new_pd,new_task->regs.esp-4096,running_task->regs.esp-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+//	mmu_map_page(new_pd,new_task->regs.esp-4096,running_task->regs.esp-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
 
 
-	create_task(new_task, __builtin_extract_return_addr(__builtin_return_address(1)) ,running_task->regs.eflags,V2P(new_pd));
+	create_task(new_task, running_task->regs.eip ,DEFAULT_TASK_FLAGS,V2P(new_pd));
 
-	__builtin_memcpy(new_task->start_stack,running_task->start_stack,4096);
-	mmu_map_page(new_pd,V2P(new_task->start_stack),running_task->start_stack,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-
-//	new_task->regs.esp = running_task->regs.esp;
 	add_task(new_task);
 
-	return 0;
+	return new_task->tid;
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
@@ -66,8 +64,9 @@ uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintp
 ISR(syscall_i80_handler) {
 	uint32_t* userstack  = frame->useresp;
 	uint32_t syscall_no  = userstack[0];
-	if(syscall_no == 4) dump_frame(frame);
+
 	if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
+		running_task->regs.eip = __builtin_extract_return_addr(__builtin_return_address(0));
 		userstack[0] = syscalls_table[syscall_no](userstack[1],userstack[2],userstack[3],userstack[4]);
 	} else {
 		dump_frame(frame);
