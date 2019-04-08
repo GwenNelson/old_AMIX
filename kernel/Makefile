@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := all
 include ../make.conf
 
 ARCHDIR=arch/$(ARCH)

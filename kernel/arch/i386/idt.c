@@ -22,8 +22,8 @@ void dump_frame(interrupt_frame_t* frame) {
 }
 
 ISR(default_handler) {
-	kprintf("DEFAULT HANDLER\n");
-	dump_frame(frame);
+/*	kprintf("DEFAULT HANDLER\n");
+	dump_frame(frame);*/
 }
 
 ISR(div_zero_handler) {

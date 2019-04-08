@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/arch/idt.h>
 #include <kernel/arch/tasking.h>
+#include <kernel/kalloc.h>
 #include <kernel/syscalls.h>
 
 int sys_debug_out(char c) {
@@ -16,6 +17,11 @@ int sys_debug_out_num(uintptr_t n) {
 uint32_t sys_get_tid() {
     uint32_t tid = running_task->tid;
     return tid;
+}
+
+uint32_t sys_fork() {
+    // TODO - implement this sanely
+    return 0;
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {

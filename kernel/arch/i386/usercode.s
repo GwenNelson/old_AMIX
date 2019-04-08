@@ -6,10 +6,7 @@
 [BITS 32]
 [ORG 0x00200000]
 
-jmp start
-%xdefine X(syscall_num,syscall_name) syscall_name equ syscall_num
-	%[%include "kernel/syscalls.def"]
-%undef X
+
 
 start:
      mov ax,0x23
@@ -36,7 +33,7 @@ start:
 	call print_string
 
 	push 0xDEADBEEF
-	push debug_out_num
+	push sys_debug_out_num
 	int 0x80
 	pop ecx
 	pop ecx
@@ -46,10 +43,10 @@ start:
 	mov esi,test_tid_string
 	call print_string
 
-	push get_tid
+	push sys_get_tid
 	int 0x80
 	; we don't need to bother popping, because we just push immediately
-	push debug_out_num
+	push sys_debug_out_num
 	int 0x80
 	pop ecx
 	pop ecx
@@ -65,7 +62,7 @@ print_string:
 	cmp al,0
 	je .done
 	push eax
-	push debug_out
+	push sys_debug_out
 	int 0x80
 	pop ecx
 	pop ecx
@@ -75,7 +72,7 @@ print_string:
 
 nl:
 	push 10 
-	push debug_out
+	push sys_debug_out
 	int 0x80
 	pop ecx
 	pop ecx
@@ -84,3 +81,7 @@ nl:
 greeter_string:	         db 'usercode (task 0) running',13,10, 0
 test_dbg_out_num_string: db 'Dumping a number, this should say 0xdeadbeef: ',0
 test_tid_string:         db 'my TID is ',0
+
+%define X(syscall_num,syscall_name) sys_ %+ syscall_name equ syscall_num
+	%[%include "kernel/syscalls.def"]
+%undef X

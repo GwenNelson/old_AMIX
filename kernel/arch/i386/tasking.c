@@ -3,6 +3,7 @@
 #include <kernel/arch/tasking.h>
 #include <kernel/debug_output.h>
 #include <kernel/arch/portio.h>
+#include <kernel/arch/gdt.h>
 #include <kernel/kalloc.h>
 #include <kernel/arch/mmu.h>
 #include <kernel/arch/memlayout.h>
@@ -30,10 +31,13 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
     task->regs.cr3 = (uint32_t) pagedir;
     task->regs.esp = (uint32_t) kalloc()+4096;
 
+    task->kernel_stack = (uint32_t) kalloc()+4096;
     // stupid hack to get a reasonably unique tid
     task->tid = (uint32_t)task;
 
-    //    mmu_map_page(pagedir,EARLY_V2P(task->regs.esp),task->regs.esp,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+    mmu_map_page(&pagedir,EARLY_V2P(task->regs.esp),task->regs.esp,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+    mmu_map_page(&pagedir,EARLY_V2P(task->kernel_stack),task->kernel_stack,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
+
     task->next = 0;
 }
 
@@ -50,6 +54,7 @@ void yield() {
      running_task = running_task->next;
      if(running_task==NULL) running_task=&main_task;
      load_page_directory(running_task->regs.cr3);
+     set_kernel_stack(running_task->kernel_stack);
      asm volatile("sti");
      switch_to_task(&last->regs, &running_task->regs);
 }

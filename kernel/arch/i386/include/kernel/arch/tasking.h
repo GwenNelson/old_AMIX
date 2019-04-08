@@ -14,6 +14,7 @@ typedef struct task_regs_t {
 typedef struct task_control_block_t task_control_block_t;
 typedef struct task_control_block_t {
 	task_control_block_t* next;
+	uint32_t kernel_stack;
 	uint32_t tid;
 	task_regs_t regs;
 } task_control_block_t;
