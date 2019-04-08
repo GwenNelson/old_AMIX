@@ -1,11 +1,21 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <kernel/arch/idt.h>
+#include <kernel/arch/tasking.h>
 #include <kernel/syscalls.h>
 
 int sys_debug_out(char c) {
     kprintf("%c",c);
     return 0;
+}
+
+int sys_debug_out_num(uintptr_t n) {
+    kprintf("0x%08x",n);
+}
+
+uint32_t sys_get_tid() {
+    uint32_t tid = running_task->tid;
+    return tid;
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {

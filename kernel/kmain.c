@@ -73,6 +73,7 @@ void setup_user() {
      // setup the TCB
      create_task(&first_user_proc,0x00200000,DEFAULT_TASK_FLAGS,V2P(&user_proc_dir));
 
+     kprintf("About to start first user process with TID 0x%08x\n",first_user_proc.tid);
      // finally, run the bugger
      add_task(&first_user_proc);
 }

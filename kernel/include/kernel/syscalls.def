@@ -1,2 +1,4 @@
 X(1,debug_out)
-#define SYSCALL_COUNT 1
+X(2,debug_out_num)
+X(3,get_tid)
+#define SYSCALL_COUNT 3

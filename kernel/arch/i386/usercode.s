@@ -1,5 +1,7 @@
 ; this is the userland code that inits everything as appropriate
-
+%define sys_debug_out     0x1
+%define sys_debug_out_num 0x2
+%define sys_get_tid       0x3
 [GLOBAL start]
 [BITS 32]
 [ORG 0x00200000]
@@ -24,6 +26,33 @@ start:
 	mov esi,greeter_string
 	call print_string
 
+	mov esi, test_dbg_out_num_string
+	call print_string
+
+	push 0xDEADBEEF
+	push sys_debug_out_num
+	int 0x80
+	pop ecx
+	pop ecx
+
+	call nl
+
+	mov esi,test_tid_string
+	call print_string
+
+	push sys_get_tid
+	int 0x80
+	pop eax
+	
+	push eax
+	push sys_debug_out_num
+	int 0x80
+	pop ecx
+	pop ecx
+
+	call nl
+
+
 endless_loop: jmp endless_loop
 
 print_string:
@@ -32,7 +61,7 @@ print_string:
 	cmp al,0
 	je .done
 	push eax
-	push 0x1
+	push sys_debug_out
 	int 0x80
 	pop ecx
 	pop ecx
@@ -40,4 +69,14 @@ print_string:
 	.done:
 	ret
 
-greeter_string:	db 'usercode (task 0) running',13,10, 0
+nl:
+	push 10 
+	push sys_debug_out
+	int 0x80
+	pop ecx
+	pop ecx
+	ret
+
+greeter_string:	         db 'usercode (task 0) running',13,10, 0
+test_dbg_out_num_string: db 'Dumping a number, this should say 0xdeadbeef: ',0
+test_tid_string:         db 'my TID is ',0

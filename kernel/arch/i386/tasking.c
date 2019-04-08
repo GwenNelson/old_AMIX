@@ -29,7 +29,11 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
     task->regs.eip = (uint32_t) entry;
     task->regs.cr3 = (uint32_t) pagedir;
     task->regs.esp = (uint32_t) kalloc()+4096;
-//    mmu_map_page(pagedir,EARLY_V2P(task->regs.esp),task->regs.esp,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+
+    // stupid hack to get a reasonably unique tid
+    task->tid = (uint32_t)task;
+
+    //    mmu_map_page(pagedir,EARLY_V2P(task->regs.esp),task->regs.esp,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
     task->next = 0;
 }
 
