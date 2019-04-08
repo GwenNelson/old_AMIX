@@ -21,7 +21,7 @@ start:
 	; here is where we start doing shit
 	; first, test a simple syscall via int 0x80
 
-	mov esi,hello_world_string
+	mov esi,greeter_string
 	call print_string
 
 endless_loop: jmp endless_loop
@@ -40,4 +40,4 @@ print_string:
 	.done:
 	ret
 
-hello_world_string:	db 'Hello world', 0
+greeter_string:	db 'usercode (task 0) running',13,10, 0

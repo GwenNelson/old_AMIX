@@ -24,6 +24,7 @@ KERNEL_OBJS=\
 	kalloc.o\
 	printf.o\
 	memset.o\
+	syscalls.o\
 	kmain.o
 
 .c.o:

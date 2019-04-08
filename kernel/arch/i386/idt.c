@@ -2,7 +2,7 @@
 #include <kernel/arch/memlayout.h>
 #include <kernel/arch/idt.h>
 #include <kernel/arch/portio.h>
-#include <kernel/syscall.h>
+#include <kernel/syscalls.h>
 
 idt_entry_t idt_entries[256];
 idt_ptr_t   idt_ptr;
@@ -73,19 +73,13 @@ ISR_FAULT(double_fault_handler) {
 
 ISR(timer_handler);
 
-uint32_t sys_debug_out(uint32_t* params) {
-	kprintf("%c",params[1]);
-}
 
-static uint32_t (*syscalls[])(uint32_t*) = {
-	[SYS_debug_out]	sys_debug_out,
-};
 
 ISR(syscall_handler) {
 	uint32_t* userstack  = frame->useresp;
 	uint32_t syscall_no  = userstack[0];
-	if(syscall_no >0 && syscall_no < (sizeof(syscalls)/sizeof(void*)) && syscalls[syscall_no]) {
-		userstack[0] = syscalls[syscall_no](userstack);
+	if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
+		userstack[0] = syscalls_table[syscall_no](userstack[1],userstack[2],userstack[3],userstack[4]);
 	} else {
 		kprintf("unknown syscall number 0x%x\n",syscall_no);
 	}
