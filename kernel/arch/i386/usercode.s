@@ -5,7 +5,7 @@
 [GLOBAL start]
 [BITS 32]
 [ORG 0x00200000]
-
+[MAP all usercode.map]
 
 
 start:
@@ -34,8 +34,8 @@ start:
 
 	push 0xDEADBEEF
 	push sys_debug_out_num
-	int 0x80
-	pop ecx
+L1:	int 0x80
+L2:	pop ecx
 	pop ecx
 
 	call nl
@@ -43,12 +43,16 @@ start:
 	mov esi,test_tid_string
 	call print_string
 
-	push sys_get_tid
-	int 0x80
-	; we don't need to bother popping, because we just push immediately
-	push sys_debug_out_num
-	int 0x80
-	pop ecx
+	push sys_fork
+L3:	int 0x80
+L4:	pop ecx
+
+L5:	push sys_get_tid
+L6:	int 0x80
+L7:	; we don't need to bother popping, because we just push immediately
+L8:	push sys_debug_out_num
+L9:	int 0x80
+L10:	pop ecx
 	pop ecx
 
 	call nl

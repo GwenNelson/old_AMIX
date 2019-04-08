@@ -31,5 +31,7 @@ typedef struct interrupt_frame_t {
 	uint32_t ss;
 } interrupt_frame_t;
 
+void dump_frame(interrupt_frame_t* frame);
+
 #define ISR(name) __attribute__((interrupt)) void name (interrupt_frame_t* frame)
 #define ISR_FAULT(name)  __attribute__((interrupt)) void name (interrupt_frame_t* frame, uint32_t errno)
