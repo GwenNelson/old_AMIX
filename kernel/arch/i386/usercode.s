@@ -42,9 +42,7 @@ start:
 
 	push sys_get_tid
 	int 0x80
-	pop eax
-	
-	push eax
+	; we don't need to bother popping, because we just push immediately
 	push sys_debug_out_num
 	int 0x80
 	pop ecx
