@@ -3,11 +3,12 @@
 #include <kernel/arch/idt.h>
 #include <kernel/syscalls.h>
 
-uint32_t sys_debug_out(char c) {
-	kprintf("%c",c);
+int sys_debug_out(char c) {
+    kprintf("%c",c);
+    return 0;
 }
 
-uint32_t (*syscalls_table[SYSCALL_COUNT+1])(uint32_t,uint32_t,uint32_t,uint32_t) = {
+uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name) [num] &sys_##name,
 	#include <kernel/syscalls.def>
 #undef X

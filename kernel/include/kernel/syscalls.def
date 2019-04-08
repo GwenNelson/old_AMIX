@@ -1,2 +1,2 @@
 X(1,debug_out)
-#define SYSCALL_COUNT __LINE__-1
+#define SYSCALL_COUNT 1
