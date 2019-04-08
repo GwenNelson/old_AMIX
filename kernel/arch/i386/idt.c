@@ -72,19 +72,9 @@ ISR_FAULT(double_fault_handler) {
 }
 
 ISR(timer_handler);
+ISR(syscall_i80_handler);
 
 
-
-ISR(syscall_handler) {
-	uint32_t* userstack  = frame->useresp;
-	uint32_t syscall_no  = userstack[0];
-	if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
-		userstack[0] = syscalls_table[syscall_no](userstack[1],userstack[2],userstack[3],userstack[4]);
-	} else {
-		kprintf("unknown syscall number 0x%x\n",syscall_no);
-	}
-
-}
 
 static inline void lidt(void* base, uint16_t size)
 {   // This function works in 32 and 64bit mode
@@ -114,6 +104,6 @@ void init_idt() {
      idt_set_gate(0x08, &double_fault_handler,  0x8,0x8F);
      idt_set_gate(0x0D, &gpf_handler,           0x8,0x8F);
      idt_set_gate(0x20, &timer_handler,		0x8,0x8F);
-     idt_set_gate(0x80, &syscall_handler,       0x8,0x8F);
+     idt_set_gate(0x80, &syscall_i80_handler,       0x8,0x8F);
      lidt(idt_ptr.base, idt_ptr.limit);
 }
