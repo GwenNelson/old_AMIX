@@ -26,9 +26,6 @@ start:
 	; here is where we start doing shit
 	; first, test a simple syscall via int 0x80
 
-	mov esi,greeter_string
-	call print_string
-
 	mov esi, test_dbg_out_num_string
 	call print_string
 
@@ -39,39 +36,6 @@ start:
 	pop ecx
 
 	call nl
-
-	mov esi,test_tid_string
-	call print_string
-
-	push sys_get_tid
-	int 0x80
-	; we don't need to bother popping, because we just push immediately
-	push sys_debug_out_num
-	int 0x80
-	pop ecx
-	pop ecx
-
-	call nl
-
-
-	mov esi,fork_ret_str
-	call print_string
-
-	push sys_fork
-	int 0x80
-	push sys_debug_out_num
-	int 0x80
-	pop ecx
-	pop ecx
-
-	call nl
-
-
-
-
-
-	
-
 
 	mov esi,test_tid_string
 	call print_string
@@ -112,7 +76,7 @@ nl:
 
 greeter_string:	         db 'usercode (task 0) running',13,10, 0
 test_dbg_out_num_string: db 'Dumping a number, this should say 0xdeadbeef: ',0
-test_tid_string:         db ' my TID is ',0
+test_tid_string:         db 'my TID is ',0
 fork_ret_str:		 db 'fork returned ',0
 
 %define X(syscall_num,syscall_name) sys_ %+ syscall_name equ syscall_num
