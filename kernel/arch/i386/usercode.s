@@ -1,10 +1,16 @@
 ; this is the userland code that inits everything as appropriate
-%define sys_debug_out     0x1
-%define sys_debug_out_num 0x2
-%define sys_get_tid       0x3
+
+
+
 [GLOBAL start]
 [BITS 32]
 [ORG 0x00200000]
+
+jmp start
+%xdefine X(syscall_num,syscall_name) syscall_name equ syscall_num
+	%[%include "kernel/syscalls.def"]
+%undef X
+
 start:
      mov ax,0x23
      mov ds,ax
@@ -30,7 +36,7 @@ start:
 	call print_string
 
 	push 0xDEADBEEF
-	push sys_debug_out_num
+	push debug_out_num
 	int 0x80
 	pop ecx
 	pop ecx
@@ -40,10 +46,10 @@ start:
 	mov esi,test_tid_string
 	call print_string
 
-	push sys_get_tid
+	push get_tid
 	int 0x80
 	; we don't need to bother popping, because we just push immediately
-	push sys_debug_out_num
+	push debug_out_num
 	int 0x80
 	pop ecx
 	pop ecx
@@ -59,7 +65,7 @@ print_string:
 	cmp al,0
 	je .done
 	push eax
-	push sys_debug_out
+	push debug_out
 	int 0x80
 	pop ecx
 	pop ecx
@@ -69,7 +75,7 @@ print_string:
 
 nl:
 	push 10 
-	push sys_debug_out
+	push debug_out
 	int 0x80
 	pop ecx
 	pop ecx
