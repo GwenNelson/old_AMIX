@@ -121,8 +121,8 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      }
 
 
+     asm volatile("sti");
 
-     init_tasking();
      // idle loop
-     for(;;) asm volatile("hlt");
+     for(;;) yield(); 
 }

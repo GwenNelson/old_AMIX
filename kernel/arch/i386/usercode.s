@@ -59,21 +59,13 @@ start:
 	call nl
 
 
-	and ebx,127
-	push ebx
-	push sys_debug_out
+	and ebx,4095
 
+	mov eax, 0xC03FF000
+	add eax, ebx
 endless_loop:
-;	and ebx,0x7F
-;	add ebx,70
-;	push ebx
-;	push sys_debug_out
-	int 0x80
-	pop ecx
-	pop ecx
-
-	push ebx
-	push sys_debug_out
+	add ebx,1
+	mov dword [eax], ebx
 
  	jmp endless_loop
 

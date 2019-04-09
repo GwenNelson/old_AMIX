@@ -81,7 +81,7 @@ static void console_write(char *c) {
      char o;
      while (c[i]) {
         o=c[i++];
-     	console_put(o);
+//     	console_put(o);
         while(is_ser_transmit_empty(PORT_COM1) == 0);
         outb(PORT_COM1,o);
      }

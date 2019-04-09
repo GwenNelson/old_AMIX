@@ -19,6 +19,8 @@ void init_tasking() {
      tasking_ready = true;
 }
 
+static uint32_t counter=0;
+
 void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32_t *pagedir) {
     	task->regs.eax = 0;
     task->regs.ebx = 0;
@@ -34,11 +36,18 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
 
     task->kernel_stack = (uint32_t) kalloc()+4096;
     // stupid hack to get a reasonably unique tid
-    task->tid   = (uint32_t)task;
-    task->tid  ^= (task->tid * 11400714819323198485llu);
-    task->tid  ^= (task->tid << 7);
-    task->tid  ^= (task->tid + (task->tid >> 5));
-    task->tid  ^= (task->tid % 254);
+    task->tid   = ((uint32_t)task);
+    task->tid  += counter++;
+
+    task->tid  +=  ~(task->tid << 15);
+    task->tid  ^=   (task->tid >> 10);
+    task->tid  +=   (task->tid << 3);
+    task->tid  ^=   (task->tid >> 6);
+    task->tid  +=  ~(task->tid << 11);
+    task->tid  ^=   (task->tid >> 16);
+
+    task->tid  ^= (task->tid * 11400714819323198485llu) << 32;
+
 
     mmu_map_page(&pagedir,V2P(task->start_stack),    task->start_stack,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
     mmu_map_page(&pagedir,V2P(task->kernel_stack-4096),task->kernel_stack-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
@@ -52,7 +61,6 @@ void add_task(task_control_block_t* task) {
       while((t->next != NULL)) t=t->next;
       t->next = task;
      asm volatile("sti");
-     yield();
 }
 
 void yield() {
