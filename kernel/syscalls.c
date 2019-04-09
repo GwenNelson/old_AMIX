@@ -14,6 +14,7 @@ int sys_debug_out(char c) {
 
 int sys_debug_out_num(uintptr_t n) {
     kprintf("0x%08x",n);
+    return 0;
 }
 
 uint32_t sys_get_tid() {
@@ -35,10 +36,14 @@ ISR(syscall_i80_handler) {
 
 	if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
 		running_task->regs.eip = __builtin_extract_return_addr(__builtin_return_address(0));
+//		userstack++;
 		userstack[0] = syscalls_table[syscall_no](userstack[1],userstack[2],userstack[3],userstack[4]);
+//		return syscalls_table[syscall_no](userstack[1],userstack[2],userstack[3],userstack[4]);
+
 	} else {
 		dump_frame(frame);
 		kprintf("unknown syscall number 0x%x\n",syscall_no);
+		return 0;
 	}
 
 }

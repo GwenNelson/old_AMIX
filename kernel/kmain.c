@@ -61,7 +61,7 @@ void setup_timer(timer_t* timer) {
      timer->callback = &timer_cb;
 }
 
-char static_pool[4096*32] __attribute((aligned(4096))); // just enough to bootstrap
+char static_pool[4096*256] __attribute((aligned(4096))); // just enough to bootstrap
 
 mmu_page_directory_t user_proc_dir;
 task_control_block_t first_user_proc;
@@ -72,49 +72,57 @@ task_control_block_t second_user_proc;
 extern char* usercode;
 extern char* usercode_end;
 
-void setup_user() {
+void setup_usercode(mmu_page_directory_t* pd, task_control_block_t* tcb) {
 //     clear_page_directory(&user_proc_dir);
      // copy the kernel mappings
-     __builtin_memcpy(&user_proc_dir,&kernel_page_dir,4096);
+     __builtin_memcpy(pd,&kernel_page_dir,4096);
+     memset((void*)tcb,0,sizeof(tcb));
 
      // allocate a single physical page and copy usercode into it
      uint32_t usercode_len = (uint32_t)usercode_end - (uint32_t)usercode;
-     kprintf("Usercode is at 0x%08x and %d bytes long\n", (uint32_t)usercode, usercode_len);
      char* p = (char*)kalloc();
      __builtin_memcpy(p,usercode,4096);
 
      // map the code page where usercode expects to start
-     mmu_map_page(&user_proc_dir,V2P(p),0x00200000,MMU_PTE_PRESENT|MMU_PTE_USER);
+     mmu_map_page(pd,V2P(p),0x00200000,MMU_PTE_PRESENT|MMU_PTE_USER);
 
      // map the page where usercode expects stack
-     mmu_map_page(&user_proc_dir,EARLY_V2P(kalloc()),0x00201000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-     mmu_map_page(&user_proc_dir,EARLY_V2P(kalloc()),0x00202000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+     mmu_map_page(pd,EARLY_V2P(kalloc()),0x00201000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+     mmu_map_page(pd,EARLY_V2P(kalloc()),0x00202000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
 
      // setup the TCB
-     create_task(&first_user_proc,0x00200000,DEFAULT_TASK_FLAGS,V2P(&user_proc_dir));
+     create_task(tcb,0x00200000,DEFAULT_TASK_FLAGS,V2P(&user_proc_dir));
      first_user_proc.regs.esp = 0x00202000;
 
-     kprintf("About to start first user process with TID 0x%08x\n",first_user_proc.tid);
      // finally, run the bugger
-     add_task(&first_user_proc);
+     add_task(tcb);
 }
 
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
 
      // TODO: fix this, use an entry-based system or something
-     setup_phys_alloc(static_pool, 4096*32);
+     setup_phys_alloc(static_pool, 4096*256);
      setup_paging();
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
+
+     // TODO - we need to add locks
 
      setup_timer(timer);
 
      init_tasking();
 
-     setup_user();
+     setup_usercode(&user_proc_dir, &first_user_proc);
 
-     asm volatile("sti");
 
+     int i=0;
+     for(i=0; i<16; i++) {
+		setup_usercode(kalloc(), kalloc());
+     }
+
+
+
+     init_tasking();
      // idle loop
      for(;;) asm volatile("hlt");
 }

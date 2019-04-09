@@ -46,7 +46,11 @@ start:
 
 	push sys_get_tid
 	int 0x80
-	; we don't need to bother popping, because we just push immediately
+	pop ebx
+
+
+
+	push ebx
 	push sys_debug_out_num
 	int 0x80
 	pop ecx
@@ -54,7 +58,24 @@ start:
 
 	call nl
 
-endless_loop: 	jmp endless_loop
+
+	and ebx,127
+	push ebx
+	push sys_debug_out
+
+endless_loop:
+;	and ebx,0x7F
+;	add ebx,70
+;	push ebx
+;	push sys_debug_out
+	int 0x80
+	pop ecx
+	pop ecx
+
+	push ebx
+	push sys_debug_out
+
+ 	jmp endless_loop
 
 print_string:
 	.run:

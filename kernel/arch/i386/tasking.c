@@ -34,7 +34,11 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
 
     task->kernel_stack = (uint32_t) kalloc()+4096;
     // stupid hack to get a reasonably unique tid
-    task->tid = (uint32_t)task;
+    task->tid   = (uint32_t)task;
+    task->tid  ^= (task->tid * 11400714819323198485llu);
+    task->tid  ^= (task->tid << 7);
+    task->tid  ^= (task->tid + (task->tid >> 5));
+    task->tid  ^= (task->tid % 254);
 
     mmu_map_page(&pagedir,V2P(task->start_stack),    task->start_stack,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
     mmu_map_page(&pagedir,V2P(task->kernel_stack-4096),task->kernel_stack-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
