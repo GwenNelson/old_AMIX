@@ -1,4 +1,3 @@
 X(1,debug_out)
 X(2,debug_out_num)
 X(3,get_tid)
-X(4,fork)

@@ -75,7 +75,6 @@ nl:
 	pop ecx
 	ret
 
-greeter_string:	         db 'usercode (task 0) running',13,10, 0
 test_dbg_out_num_string: db 'Dumping a number, this should say 0xdeadbeef: ',0
 test_tid_string:         db 'my TID is ',0
 fork_ret_str:		 db 'fork returned ',0

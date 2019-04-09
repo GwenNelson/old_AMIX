@@ -3,7 +3,6 @@
 int sys_debug_out(char c);
 int sys_debug_out_num(uintptr_t n);
 uint32_t sys_get_tid();
-uint32_t sys_fork();
 
 #define SYSCALL_COUNT 4
 

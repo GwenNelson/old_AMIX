@@ -21,39 +21,7 @@ uint32_t sys_get_tid() {
     return tid;
 }
 
-
 extern char* usercode;
-uint32_t sys_fork() {
-	// TODO - iterate through stuff, copy relevant bits
-	asm volatile("cli");
-	task_control_block_t* new_task = (task_control_block_t*)kalloc();
-	mmu_page_directory_t* new_pd   = (mmu_page_directory_t*)kalloc();
-
-	mmu_map_page(&(running_task->regs.cr3),EARLY_V2P(new_task),new_task,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-	mmu_map_page(&(running_task->regs.cr3),EARLY_V2P(new_pd),new_pd,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-
-	clear_page_directory(new_pd);
-
-	int i=0;
-	for(i=0; i<1024; i++) {
-		mmu_map_page(new_pd,(void*)(i * 0x1000), (void*)(i * 0x1000) + KERN_BASE,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_CPU_GLOBAL|MMU_PTE_USER);
-	}
-	mmu_map_page(new_pd,0xb8000,0xC03FF000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-
-	char* p=(char*)kalloc();
-	__builtin_memcpy(p,&usercode,4096);
-
-	mmu_map_page(new_pd,V2P(p),0x00200000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-
-//	mmu_map_page(new_pd,new_task->regs.esp-4096,running_task->regs.esp-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
-
-
-	create_task(new_task, running_task->regs.eip ,DEFAULT_TASK_FLAGS,V2P(new_pd));
-
-	add_task(new_task);
-
-	return new_task->tid;
-}
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name) [num] &sys_##name,
