@@ -61,7 +61,7 @@ void setup_timer(timer_t* timer) {
      timer->callback = &timer_cb;
 }
 
-char static_pool[4096*256] __attribute((aligned(4096))); // just enough to bootstrap
+char static_pool[4096*512] __attribute((aligned(4096))); // just enough to bootstrap
 
 mmu_page_directory_t user_proc_dir;
 task_control_block_t first_user_proc;
@@ -102,26 +102,23 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
 
      // TODO: fix this, use an entry-based system or something
-     setup_phys_alloc(static_pool, 4096*256);
+     setup_phys_alloc(static_pool, 4096*512);
      setup_paging();
      setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
-
-     // TODO - we need to add locks
-
-     setup_timer(timer);
 
      init_tasking();
 
      setup_usercode(&user_proc_dir, &first_user_proc);
 
+     setup_timer(timer);
+
 
      int i=0;
-     for(i=0; i<16; i++) {
+     for(i=0; i<21; i++) {
 		setup_usercode(kalloc(), kalloc());
      }
-
-
      asm volatile("sti");
+
 
      // idle loop
      for(;;) yield(); 

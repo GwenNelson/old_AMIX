@@ -26,6 +26,7 @@ KERNEL_OBJS=\
 	printf.o\
 	memset.o\
 	syscalls.o\
+	spinlock.o\
 	kmain.o
 
 .c.o:
