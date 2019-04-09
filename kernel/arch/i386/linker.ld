@@ -51,6 +51,7 @@ SECTIONS
 	*(.bootstrap_stack)
         . = ALIGN(4096);
 	_ebss = .;
+	edata = .;
     }
 
     _kernel_end = .;

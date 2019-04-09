@@ -61,8 +61,16 @@ ISR_FAULT(gpf_handler) {
 }
 
 ISR_FAULT(page_fault) {
-	kprintf("PAGE FAULT!\n");
-	// TODO - pass this to the VMM
+	kprintf("PAGE FAULT! errcode=0%08x\n",errno);
+	dump_frame(frame);
+     if((errno & 0x1)==0x1) kprintf("Protection violation\n");
+     if((errno & 0x2)==0x2) { 
+        kprintf("Write failed\n");
+     } else {
+        kprintf("Read failed\n");
+     }
+     if((errno & 0x4)==0x4) kprintf("Failed to fetch instruction\n");
+	for(;;) asm volatile("cli; hlt");
 }
 
 ISR_FAULT(double_fault_handler) {
@@ -103,6 +111,7 @@ void init_idt() {
      idt_set_gate(0x04, &invalid_opcode_handler,0x8,0x8F);
      idt_set_gate(0x08, &double_fault_handler,  0x8,0x8F);
      idt_set_gate(0x0D, &gpf_handler,           0x8,0x8F);
+     idt_set_gate(0x0E, &page_fault,            0x8,0x8F);
      idt_set_gate(0x20, &timer_handler,		0x8,0x8F);
      idt_set_gate(0x80, &syscall_i80_handler,       0x8,0x8F);
      lidt(idt_ptr.base, idt_ptr.limit);

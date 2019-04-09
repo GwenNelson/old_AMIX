@@ -1,4 +1,7 @@
 #include <kernel/kalloc.h>
+#include <kernel/kmain.h>
+#include <kernel/arch/mmu.h>
+#include <kernel/arch/memlayout.h>
 
 #include <stdint.h>
 #include <stddef.h>

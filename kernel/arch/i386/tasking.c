@@ -36,7 +36,7 @@ void create_task(task_control_block_t *task, void* entry, uint32_t flags, uint32
     // stupid hack to get a reasonably unique tid
     task->tid = (uint32_t)task;
 
-    mmu_map_page(&pagedir,V2P(task->regs.esp-4096),    task->regs.esp-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+    mmu_map_page(&pagedir,V2P(task->start_stack),    task->start_stack,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
     mmu_map_page(&pagedir,V2P(task->kernel_stack-4096),task->kernel_stack-4096,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
 
     task->next = 0;

@@ -21,16 +21,34 @@ void setup_paging() {
      // create a blank page directory
      clear_page_directory(&kernel_page_dir);
 
-     // create kernel image mapping in the page table
-     int i=0;
+    // create low mapping in the page table
+     uintptr_t i=0;
      for(i=0; i<1024; i++) {
-	mmu_map_page(&kernel_page_dir,(void*)(i * 0x1000), (void*)(i * 0x1000) + KERN_BASE,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_CPU_GLOBAL);
+	mmu_map_page(&kernel_page_dir,(void*)(i * 0x1000), (void*)(i * 0x1000) + KERN_BASE,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
      }
 
-     mmu_map_page(&kernel_page_dir,0xb8000,0xC03FF000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
+
+
+     // first map the text section of the kernel
+     extern char* code;
+     extern char* ecode;
+     size_t code_len = ecode-code;
+     i=&code;
+     for(i=&code; i< &ecode; i += 4096) {
+         mmu_map_page(&kernel_page_dir,(void*)(i-KERN_BASE), (void*)(i), MMU_PTE_PRESENT);
+     }
+
+     // now the data
+     extern char* data;
+     extern char* _edata;
+     size_t data_len = _edata-data;
+     for(i=&data; i<&_edata; i += 4096) {
+         mmu_map_page(&kernel_page_dir,(void*)(i-KERN_BASE), (void*)(i), MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
+     }
+
+      mmu_map_page(&kernel_page_dir,0xb8000,0xC03FF000,MMU_PTE_USER|MMU_PTE_WRITABLE|MMU_PTE_PRESENT);
      // switch to the new page directory
      load_page_directory((mmu_page_directory_t*)  EARLY_V2P(&kernel_page_dir));
-
 }
 
 void timer_cb() {
@@ -43,7 +61,7 @@ void setup_timer(timer_t* timer) {
      timer->callback = &timer_cb;
 }
 
-char static_pool[4096*128] __attribute((aligned(4096)));
+char static_pool[4096*32] __attribute((aligned(4096))); // just enough to bootstrap
 
 mmu_page_directory_t user_proc_dir;
 task_control_block_t first_user_proc;
@@ -55,14 +73,9 @@ extern char* usercode;
 extern char* usercode_end;
 
 void setup_user() {
-     clear_page_directory(&user_proc_dir);
-
-     // setup the kernel mappings in user space
-     int i=0;
-     for(i=0; i<1024; i++) {
-	mmu_map_page(&user_proc_dir,(void*)(i * 0x1000), (void*)(i * 0x1000) + KERN_BASE,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_CPU_GLOBAL|MMU_PTE_USER);
-     }
-     mmu_map_page(&user_proc_dir,0xb8000,0xC03FF000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+//     clear_page_directory(&user_proc_dir);
+     // copy the kernel mappings
+     __builtin_memcpy(&user_proc_dir,&kernel_page_dir,4096);
 
      // allocate a single physical page and copy usercode into it
      uint32_t usercode_len = (uint32_t)&usercode_end - (uint32_t)&usercode;
@@ -73,8 +86,13 @@ void setup_user() {
      // map the page where usercode expects to start
      mmu_map_page(&user_proc_dir,V2P(p),0x00200000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
 
+     // map the page where usercode expects stack
+     mmu_map_page(&user_proc_dir,EARLY_V2P(kalloc()),0x00201000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+     mmu_map_page(&user_proc_dir,EARLY_V2P(kalloc()),0x00202000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+
      // setup the TCB
      create_task(&first_user_proc,0x00200000,DEFAULT_TASK_FLAGS,V2P(&user_proc_dir));
+     first_user_proc.regs.esp = 0x00202000;
 
      kprintf("About to start first user process with TID 0x%08x\n",first_user_proc.tid);
      // finally, run the bugger
@@ -110,19 +128,25 @@ void setup_user2() {
 
 void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
      kprintf("AMIX starting....\n\n");
-     setup_phys_alloc(static_pool, 4096*128);
-     setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
-     setup_paging();
 
-     asm volatile("sti");
+     // TODO: fix this, use an entry-based system or something
+     setup_phys_alloc(static_pool, 4096*32);
+     setup_paging();
+     setup_phys_alloc(alloc_pool+KERN_BASE, alloc_pool_size);
+
+
+
+
+
 
      setup_timer(timer);
 
      init_tasking();
 
-
      setup_user();
-     setup_user2();
+//     setup_user2();
+
+     asm volatile("sti");
 
      // idle loop
      for(;;) asm volatile("hlt");

@@ -17,7 +17,7 @@ void clear_page_table(mmu_page_table_t* table) {
      // we just clear out the whole table
      int i=0;
      for(i=0; i<1024; i++) {
-         (*table)[i] = MMU_PTE_WRITABLE|MMU_PTE_USER;
+         (*table)[i] = MMU_PTE_WRITABLE;
      }
 }
 

@@ -9,6 +9,7 @@
 
 
 start:
+     mov esp,0x00202000
      mov ax,0x23
      mov ds,ax
      mov es,ax 
@@ -82,3 +83,5 @@ fork_ret_str:		 db 'fork returned ',0
 %define X(syscall_num,syscall_name) sys_ %+ syscall_name equ syscall_num
 	%[%include "kernel/syscalls.def"]
 %undef X
+
+
