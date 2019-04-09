@@ -2,6 +2,5 @@
 *.d
 *.o
 *.swp
+*.map
 sysroot/*
-kernel/kernel.bin
-kernel/kernel.map

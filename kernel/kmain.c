@@ -83,8 +83,8 @@ void setup_user() {
      char* p = (char*)kalloc();
      __builtin_memcpy(p,&usercode,4096);
 
-     // map the page where usercode expects to start
-     mmu_map_page(&user_proc_dir,V2P(p),0x00200000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
+     // map the code page where usercode expects to start
+     mmu_map_page(&user_proc_dir,V2P(p),0x00200000,MMU_PTE_PRESENT|MMU_PTE_USER);
 
      // map the page where usercode expects stack
      mmu_map_page(&user_proc_dir,EARLY_V2P(kalloc()),0x00201000,MMU_PTE_WRITABLE|MMU_PTE_PRESENT|MMU_PTE_USER);
