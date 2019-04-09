@@ -78,10 +78,10 @@ void setup_user() {
      __builtin_memcpy(&user_proc_dir,&kernel_page_dir,4096);
 
      // allocate a single physical page and copy usercode into it
-     uint32_t usercode_len = (uint32_t)&usercode_end - (uint32_t)&usercode;
-     kprintf("Usercode is at 0x%08x and %d bytes long\n", (uint32_t)&usercode, usercode_len);
+     uint32_t usercode_len = (uint32_t)usercode_end - (uint32_t)usercode;
+     kprintf("Usercode is at 0x%08x and %d bytes long\n", (uint32_t)usercode, usercode_len);
      char* p = (char*)kalloc();
-     __builtin_memcpy(p,&usercode,4096);
+     __builtin_memcpy(p,usercode,4096);
 
      // map the code page where usercode expects to start
      mmu_map_page(&user_proc_dir,V2P(p),0x00200000,MMU_PTE_PRESENT|MMU_PTE_USER);

@@ -1,6 +1,6 @@
-[GLOBAL usercode]
-[GLOBAL usercode_end]
+[GLOBAL default_usercode]
+[GLOBAL default_usercode_end]
 section .rodata
-usercode:
+default_usercode:
 	incbin "usercode.bin"
-usercode_end:
+default_usercode_end:

@@ -23,6 +23,12 @@
 extern char* _kernel_start;
 extern char* _kernel_end;
 
+extern char* default_usercode;
+extern char* default_usercode_end;
+
+char* usercode = NULL;
+char* usercode_end = NULL;
+
 static char cmdline[1024];
 
 void* alloc_pool = NULL;
@@ -97,12 +103,18 @@ ISR(timer_handler) {
 
 }
 
+void handle_usercode(struct multiboot_info *mboot_ptr) {
+     kprintf("Not yet implemented multiboot modules, using internal default usercode\n");
+     usercode     = &default_usercode;
+     usercode_end = &default_usercode_end;
+}
 
 void x86_enter(struct multiboot_info *mboot_ptr) {
      kprintf("AMIX booting on i386\n");
      handle_cmdline(mboot_ptr);
      handle_ram(mboot_ptr);
      handle_mmap(mboot_ptr);
+     handle_usercode(mboot_ptr);
 
      asm volatile("cli");
      init_gdt();
