@@ -1,0 +1,106 @@
+layout of virtual memory
+
+		  0xFFFFFFFF 	+-----------------------+ 
+				|			|
+				|   PAGE DIRECTORY	|
+				|			|
+		  0xFFFFF000 	+-----------------------+ CUR_PAGE_DIR
+				|			|
+				|     PAGE TABLES	|
+				|       0-1023		|
+				|	                |
+		  0xFFC00000 	+-----------------------+ CUR_PAGE_TABLES
+				|			|
+				|   UNMAPPED MMIO	|
+				|			|
+				+.......................+ KERNEL_MMIO_BRK
+				|			|
+				|    MAPPED MMIO	|
+				|			|
+		  0xE0000000 	+-----------------------+ KERNEL_MMIO_START
+				|			|
+				|     UNMAPPED		|
+				|    KERNEL HEAP	|
+				|			|
+				+.......................+ KERNEL_HEAP_BRK <---- we simulate a user process style sbrk() to handle the kernel heap
+				|			|			 basically, if we want more physical pages, we move KERNEL_HEAP_BRK and either immediatelu map
+				|    MAPPED KERNEL	|			  some pages or let the page fault handler take care of it
+				|        HEAP		|
+				|			|
+	KERNEL_HEAP_START --->	+-----------------------+ <-----+
+				.			.	|
+				.        ....		. 	|<---- although not actually required of the multiboot standard, usually modules are loaded
+				.			.	|	after the end of the .bss section, grub will tell us at runtime and we can then hopefully map it all here
+	KERNEL_BSS_END	 --->	+-----------------------+ <-----+
+				|			|
+				|    KERNEL R/W DATA	| <--------------------	this is the .bss section defined in our kernel .elf file, grub will allocate an appropriate
+				|			|			 amount of memory for it and zero it out ready for use
+	KERNEL_BSS_START --->	+-----------------------+ <-------------+	  our starting kernel stack lives in here, other kernel stacks are allocated in the heap
+				|			|		|
+				|   KERNEL R/W	DATA	|		|
+				|			|		|
+				+-----------------------+		|
+				|			|		|
+				|    KERNEL R/O DATA	|		|<------ this is basically our kernel ELF file's sections (.text, .rodata, .data)
+				|			|		|	  GRUB loads it all into place for us, and our paging code then sets up permissions
+				+-----------------------+		|
+				|			|		|
+				|     KERNEL CODE	|		|
+				|			|		|
+		  0xC0100000	+-----------------------+ <-------------+
+				.			.
+				.	  ...		. 
+				.			.
+		  0xC00BFFFF    +-----------------------+ VIDEO_RAM_END	  <-----+
+				|			|			|
+		  0xC00B8000	+.......................+ VGA_TEXT_BUFFER	|<----- this might be more appropriate in the MMIO section above, but we get it for free by
+				|			|			|	 mapping everything below 1MB at startup while setting up paging, which
+		  0xC00A0000	+-----------------------+ VIDEO_RAM_START <-----+	  allows for early debugging
+				.			.
+				.         ...		.
+				.			.
+		  0xC0000000	+-----------------------+ KERN_BASE  <----------- this maps to the start of physical RAM, such that often just adding/subtracting KERN_BASE
+				|			|			   can be used to convert between physical and virtual addresses for everything in low RAM
+				|   MAPPED USER STACK   |
+				|			|
+		  0xBFFFF000	+.......................+ USTACK_TOP <----------- this is the highest address a user process can actually address, as is traditional in UNIX,
+				|			|			   it's also where we put the user process's stack at startup, on x86 the stack grows down so
+				|   UNMAPPED USER STACK	|			     we simply need to allocate a page here (or lazy allocate by letting page faults do it)
+				|			|			      we trigger a stack overflow if the stack ends up growing below USTACK_BOTTOM
+		  0xBF800000	+-----------------------+ USTACK_BOTTOM 
+				.			.
+				.	  ....		.
+				.			.
+		  0xBF7FF000	+-----------------------+ USER_MMAP_END	   <----+
+				|			|			|
+				| 	MMAP REGION	|			|<---- if the user process requests a mapping via mmap()
+				|			|			|	or the kernel needs to give it a mapping, we do it all here
+		  0x40000000	+-----------------------+ USER_MMAP_START  <----+
+				|			|
+				|   UNMAPPED USER HEAP	|
+				|			|
+				+.......................+ USER_HEAP_BRK
+				|			|
+				|   MAPPED USER HEAP	|
+				|			|
+	USER_HEAP_START ----->	+-----------------------+ 
+				|			|
+				|    USER R/W DATA	| <------- this is the .bss section, we lazy allocate it using demand paging
+				|			|
+	USER_BSS_START	----->	+-----------------------+ <-----+
+				|			|	|
+				|    USER R/W DATA	|	|
+				|			|	|
+				+-----------------------+	|
+				|			|	|
+				|    USER R/O DATA	|	|<----- basically just the .text, .rodata and .data sections from our ELF
+				|			|	|	 we load them where the ELF headers tell us to unless this conflicts in some way
+				+-----------------------+	|
+				|			|	|
+				|      USER CODE	|	|
+				|			|	|
+				+-----------------------+ <-----+
+				.			.
+				.	UNMAPPED	.
+				.			.
+		0x00000000	+-----------------------+ <----- virtual memory starts here of course, but the offset is usually at least 1MB or so for ELF

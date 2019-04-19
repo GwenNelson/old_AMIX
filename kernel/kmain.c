@@ -114,7 +114,7 @@ void kmain(void* alloc_pool, size_t alloc_pool_size, timer_t* timer) {
 
 
      int i=0;
-     for(i=0; i<21; i++) {
+     for(i=0; i<30; i++) {
 		setup_usercode(kalloc(), kalloc());
      }
      asm volatile("sti");
