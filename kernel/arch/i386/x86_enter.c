@@ -98,7 +98,7 @@ timer_t timer;
 ISR(timer_handler) {
 	asm volatile("cli");
 	outb(0x20,0x20);
-	if(timer.callback != NULL) timer.callback();
+	if(frame->eip < 0xC0000000) if(timer.callback != NULL) timer.callback();
 	asm volatile("sti");
 
 }
@@ -125,5 +125,5 @@ void x86_enter(struct multiboot_info *mboot_ptr) {
 
      memset(&timer,0,sizeof(timer_t));
 
-     kmain(alloc_pool+4096,alloc_pool_size,&timer);
+     kmain(alloc_pool,alloc_pool_size,&timer);
 }
