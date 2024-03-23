@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <kernel/arch/pit.h>
+#include <kernel/plat/pit.h>
 
 void init_pit() {
 outb(0x43, 0x36);

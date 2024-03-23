@@ -2,6 +2,17 @@ make.conf
 * modular design
 keyboard
 	clean up, put into plat/ and add PS/2 driver
+processes
+	VM space
+	threads
+virtual memory objects + spaces
+	backing objects
+		type - either VM_OBJECT_SHADOW, VM_OBJECT_PHYSMEM, VM_OBJECT_FILE
+		void* pointer to the underlying backing object
+	virtual spaces
+		maps backing objects to virtual memory addresses
+		permissions flags etc
+	method of reconstructing the page tables etc dynamically
 serial console input
 initrd
 VFS

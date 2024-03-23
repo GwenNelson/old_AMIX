@@ -11,6 +11,7 @@
 #include <kernel/arch/pic.h>
 #include <kernel/arch/portio.h>
 #include <kernel/arch/cpuid.h>
+#include <kernel/plat/pit.h>
 #include <kernel/memset.h>
 
 #define CHECK_FLAG(flags,mask)   ((flags) & mask)
