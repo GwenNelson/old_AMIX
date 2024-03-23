@@ -81,11 +81,7 @@ ISR_FAULT(double_fault_handler) {
 
 ISR(timer_handler);
 ISR(syscall_i80_handler);
-ISR(kbd_handler) {
-	kprintf(".");
-	char scan = inb(0x60);
- outb(0x20,0x20); outb(0xa0,0x20);
-}
+ISR(kbd_handler);
 
 
 static inline void lidt(void* base, uint16_t size)
