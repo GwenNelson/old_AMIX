@@ -1,0 +1,9 @@
+make.conf
+* modular design
+keyboard
+serial console input
+initrd
+VFS
+ELF loading
+simple shell
+

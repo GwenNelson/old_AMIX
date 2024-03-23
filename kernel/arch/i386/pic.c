@@ -40,6 +40,6 @@ void PIC_remap(int offset1, int offset2)
 
 void init_pic() {
      PIC_remap(0x20,0x28);
-     outb(PIC1_DATA,0xFE);
+     outb(PIC1_DATA,0xFC);
      outb(PIC2_DATA,0xFF);
 }

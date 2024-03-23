@@ -81,7 +81,11 @@ ISR_FAULT(double_fault_handler) {
 
 ISR(timer_handler);
 ISR(syscall_i80_handler);
-
+ISR(kbd_handler) {
+	kprintf(".");
+	char scan = inb(0x60);
+ outb(0x20,0x20); outb(0xa0,0x20);
+}
 
 
 static inline void lidt(void* base, uint16_t size)
@@ -113,6 +117,7 @@ void init_idt() {
      idt_set_gate(0x0D, &gpf_handler,           0x8,0x8F);
      idt_set_gate(0x0E, &page_fault,            0x8,0x8F);
      idt_set_gate(0x20, &timer_handler,		0x8,0x8F);
+     idt_set_gate(0x21, &kbd_handler,           0x8,0x8F);
      idt_set_gate(0x80, &syscall_i80_handler,       0x8,0x8F);
      lidt(idt_ptr.base, idt_ptr.limit);
 }
