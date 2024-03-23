@@ -1,6 +1,7 @@
 make.conf
 * modular design
 keyboard
+	clean up, put into plat/ and add PS/2 driver
 serial console input
 initrd
 VFS
